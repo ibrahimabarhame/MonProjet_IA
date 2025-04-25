@@ -16,4 +16,4 @@ print(f"Les postes les plus frèquents sont : {df['poste'].value_counts()}")
 df = df.drop_duplicates()
 
 #export du fichier nettoyè
-df.to_csv("fichier_nettoyé.csv",index=False)
+df.to_csv("notebooks/fichier_nettoyer.csv",index=False)
