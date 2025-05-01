@@ -22,9 +22,10 @@ if upload_file is not None :
 
     X = df[colonnes_a_garder]
 
-    predictions = model.predict(X)
+    predictions = model.predict_proba(X)
 
-    df["Risque_depart"] = predictions
+    df["score_risque_depart %"] = predictions[:,1]
+    df["score_risque_depart %"] = df["score_risque_depart %"].round(2)*100
 
     st.subheader("Prediction")
     st.dataframe(df)
