@@ -1,14 +1,17 @@
 import pandas as pd 
 import numpy as np
+import mlflow
+import mlflow.sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score, f1_score, recall_score, precision_score
 import joblib
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.preprocessing import OneHotEncoder,StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
+import json 
 
 
 #lecture du fichier
@@ -49,42 +52,53 @@ prepocesseur = ColumnTransformer(transformers=[
 
 #Pipeline complet
 
-pipeline = Pipeline(steps=[
-    ('preprocessing',prepocesseur),
-    ('model',RandomForestClassifier(n_estimators=300, random_state=42,max_depth=10))
-])
+#entrainement du modèle avec mlflow
 
-#entrainement du modèle
-pipeline.fit(X_train,y_train)
+experiments = [
+    {"n_estimators":100,"max_depth":5},
+    {"n_estimators":300,"max_depth":10},
+    {"n_estimators":500,"max_depth":15}
+]
 
-#predictions
-y_pred = pipeline.predict(X_test)
+#démarrage de la boucle d'experience
+mlflow.set_experiment("turnover_prediction") 
 
-#importance des variables 
+for params in experiments :
 
-# 1. Récupérer les features après preprocessing
-feature_names = pipeline.named_steps['preprocessing'].get_feature_names_out()
+    with mlflow.start_run(run_name="Random Forest"):
 
-# 2. Récupérer le modèle
-modele = pipeline.named_steps['model']
-
-# 3. Importance des features
-importances = modele.feature_importances_
-
-# 4. Tableau d'importance
-feature_importance = pd.DataFrame({
-    'feature': feature_names,
-    'importance': importances
-}).sort_values(by='importance', ascending=False)
-
-print(feature_importance)
+        pipeline = Pipeline(steps=[
+            ('preprocessing',prepocesseur),
+            ('model',RandomForestClassifier(n_estimators=params['n_estimators'], random_state=42,max_depth=params['max_depth']))
+        ])
 
 
-#Evaluation
 
-print(classification_report(y_test,y_pred))
+        pipeline.fit(X_train,y_train)
 
+        #predictions
+        y_pred = pipeline.predict(X_test)
 
-#sauvegarde du modèle
+        #evaluation
+        accuracy = accuracy_score(y_test,y_pred)
+        rec = recall_score(y_test,y_pred)
+        prec = precision_score(y_test,y_pred)
+        f1 = f1_score(y_test,y_pred)
 
-joblib.dump(pipeline,"model/model_turn_over.pkl")
+        #Log des hyperparametres
+        mlflow.log_params(params)
+        mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("precision", prec)
+        mlflow.log_metric("recall", rec)
+        mlflow.log_metric("f1_score", f1)
+
+        #Log des metrique
+        mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("precision", prec)
+        mlflow.log_metric("recall", rec)
+        mlflow.log_metric("f1_score", f1)
+        mlflow.log_dict(classification_report(y_test,y_pred,output_dict=True), "classification_report.json")
+
+        #Log du modèle
+        mlflow.sklearn.log_model(pipeline,"model")
+

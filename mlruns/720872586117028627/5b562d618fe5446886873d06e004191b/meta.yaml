@@ -1,0 +1,15 @@
+artifact_uri: file:///home/ibrahima/MonProjet_IA/mlruns/720872586117028627/5b562d618fe5446886873d06e004191b/artifacts
+end_time: 1746134067884
+entry_point_name: ''
+experiment_id: '720872586117028627'
+lifecycle_stage: active
+run_id: 5b562d618fe5446886873d06e004191b
+run_name: Random Forest
+run_uuid: 5b562d618fe5446886873d06e004191b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746134063830
+status: 3
+tags: []
+user_id: ibrahima
