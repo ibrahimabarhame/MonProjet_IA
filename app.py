@@ -8,6 +8,14 @@ model = joblib.load('model/model_turn_over.pkl')
 
 st.title("Prédiction du risque de départ des employés")
 
+st.info("⚠️ Ceci est une version de démonstration utilisant un modèle IA simple sur des données fictives. Le score de risque est à but illustratif.")
+
+colonnes_attendues = ["id","age","anciennete","satisfaction","salaire","promotions_recues","annees_depuis_derniere_promotion","jours_absence","niveau_etude","type_poste","type_contrat","departement"]
+
+st.markdown("**📋 Format attendu :**")
+st.write(colonnes_attendues)
+
+
 upload_file = st.file_uploader("choisissez vottre fichier",type="csv")
 
 if upload_file is not None :
@@ -19,6 +27,8 @@ if upload_file is not None :
     #preparation des donnèes pour prediction
 
     colonnes_a_garder = [col for col in df.columns if col != 'depart']
+
+    #st.write("voici les colonnes à garder dans votre fichier",colonnes_a_garder[1:])
 
     X = df[colonnes_a_garder]
 
